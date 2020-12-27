@@ -50,7 +50,7 @@ int longestNextRef(int * buffer, char buf[][50], int start, int n) {
     }
     return maxIndex;
 }
-void OPTIMAL(char buf[][50], int size) {
+void OPTIMAL(char buf[][50]) {
     int n = atoi(buf[0]);
     int buffer[n];
     printHeader(buf[1]);
@@ -126,6 +126,7 @@ void CLOCK(char buf[][50]) {
     }
     printFooter(faultCount);
 }
+
 void LRU(char buf[][50]) {
     int n = atoi(buf[0]);
     int buffer[n];
@@ -164,6 +165,61 @@ void LRU(char buf[][50]) {
     printFooter(faultCount);
 }
 
+int *fillBuffer(list<int> dq, int n) {
+    int i = 0;
+    int *buffer = (int*) malloc(n*sizeof(int));
+    for (auto it = dq.begin(); it != dq.end(); it++) {
+        buffer[i++] = (*it);
+    }
+    return buffer;
+}
+void LRU1(char buf[][50]) {
+    int n = atoi(buf[0]);
+    int buffer[n];
+    list<int> dq;
+    unordered_map<int, int> page_to_index;
+    unordered_map<int, list<int>::iterator> page_to_iter;
+    printHeader(buf[1]);
+    int numberOfElements = 0;
+    int i = 2;
+    int faultCount = 0;
+    int index = 0;
+
+    while (atoi(buf[i]) != -1) {
+        int bufVal = atoi(buf[i]);
+        printf("%02d", bufVal);
+        int isHit = search(buffer, numberOfElements, bufVal);
+        if (isHit == -1) {
+            if (numberOfElements < n) {
+                numberOfElements++;
+                page_to_index[bufVal] = index;
+                buffer[page_to_index[bufVal]] = bufVal;
+                printf("     ");
+                index = (index+1)%n;
+            }
+            else {
+                int last = dq.back();
+                dq.pop_back();
+                page_to_iter.erase(last);
+                page_to_index[bufVal] = page_to_index[last];
+                buffer[page_to_index[bufVal]] = bufVal;
+                page_to_index.erase(last);
+                printf(" F   ");
+                faultCount++;
+            }
+        }
+        else {
+            dq.erase(page_to_iter[bufVal]);
+            buffer[page_to_index[bufVal]] = bufVal;
+            printf("     ");
+        }
+        dq.push_front(bufVal);
+        page_to_iter[bufVal] = dq.begin();
+        printBuffer(buffer, numberOfElements);
+        i++;
+    }
+    printFooter(faultCount);
+}
 void FIFO(char buf[][50]) {
     int n = atoi(buf[0]);
     int buffer[n];
@@ -198,6 +254,7 @@ void FIFO(char buf[][50]) {
     printFooter(faultCount);
 }
 
+
 int main() {
     char buf[20][50];
     int size=0;
@@ -207,15 +264,13 @@ int main() {
         FIFO(buf);
     }
     else if (strcmp(buf[1], "LRU\n") == 0) {
-        LRU(buf);
+        LRU1(buf);
     }
     else if (strcmp(buf[1], "CLOCK\n") == 0) {
         CLOCK(buf);
     }
     else if (strcmp(buf[1], "OPTIMAL\n") == 0) {
-        size -= 2;
-        OPTIMAL(buf, size);
-        // printf("hey");
+        OPTIMAL(buf);
     }
     return 0;
 }
