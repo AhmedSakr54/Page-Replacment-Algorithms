@@ -130,52 +130,6 @@ void CLOCK(char buf[][50]) {
 void LRU(char buf[][50]) {
     int n = atoi(buf[0]);
     int buffer[n];
-    queue<int> q;
-    printHeader(buf[1]);
-    int numberOfElements = 0;
-    int i = 2;
-    int faultCount = 0;
-    while (atoi(buf[i]) != -1) {
-        int bufVal = atoi(buf[i]);
-        printf("%02d", bufVal);
-        int isHit = search(buffer, numberOfElements, bufVal);
-        if (isHit == -1) {
-            if (numberOfElements < n) {
-                q.push(numberOfElements);
-                buffer[numberOfElements++] = bufVal;
-                printf("     ");
-            }
-            else {
-                int index = q.front();
-                buffer[index] = bufVal;
-                q.pop();
-                q.push(index);
-                printf(" F   ");
-                faultCount++;
-            }
-        }
-        else {
-            q.pop();
-            q.push(isHit);
-            printf("     ");
-        }
-        printBuffer(buffer, numberOfElements);
-        i++;
-    }
-    printFooter(faultCount);
-}
-
-int *fillBuffer(list<int> dq, int n) {
-    int i = 0;
-    int *buffer = (int*) malloc(n*sizeof(int));
-    for (auto it = dq.begin(); it != dq.end(); it++) {
-        buffer[i++] = (*it);
-    }
-    return buffer;
-}
-void LRU1(char buf[][50]) {
-    int n = atoi(buf[0]);
-    int buffer[n];
     list<int> dq;
     unordered_map<int, int> page_to_index;
     unordered_map<int, list<int>::iterator> page_to_iter;
@@ -264,7 +218,7 @@ int main() {
         FIFO(buf);
     }
     else if (strcmp(buf[1], "LRU\n") == 0) {
-        LRU1(buf);
+        LRU(buf);
     }
     else if (strcmp(buf[1], "CLOCK\n") == 0) {
         CLOCK(buf);
